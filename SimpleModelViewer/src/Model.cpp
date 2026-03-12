@@ -1,5 +1,6 @@
 #include "Model.h"
 
+#include <filesystem>
 #include <iostream>
 
 #include "ShaderProgram.h"
@@ -51,6 +52,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 {
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
+    std::vector<Texture2d> textures;
 
     for (unsigned int i = 0; i < mesh->mNumVertices; i++)
     {
@@ -77,5 +79,28 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
             indices.push_back(face.mIndices[j]);
     }
 
-    return Mesh{ vertices, indices };
+    if(mesh->mMaterialIndex >= 0)
+    {
+        aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+        textures = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
+    }
+
+    return Mesh{ vertices, indices, textures };
+}
+
+std::vector<Texture2d> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName)
+{
+    std::vector<Texture2d> textures;
+    for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
+    {
+        aiString str;
+        mat->GetTexture(type, i, &str);
+        std::filesystem::path texturePath = str.C_Str();
+        std::filesystem::path modelDir = directory;
+        modelDir =  modelDir.parent_path();
+        modelDir /= texturePath;
+        std::string path = modelDir.string();
+        textures.emplace_back(path);
+    }
+    return textures;
 }

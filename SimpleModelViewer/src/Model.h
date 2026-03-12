@@ -17,9 +17,9 @@ public:
     {
         loadModel(path);
     }
-    Model(std::vector<Vertex> vertices, std::vector<unsigned int> indices): directory("none")
+    Model(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture2d> textures): directory("none")
     {
-        meshes.emplace_back(std::move(vertices), std::move(indices));
+        meshes.emplace_back(std::move(vertices), std::move(indices), std::move(textures));
     }
     void Draw(ShaderProgram& shaderProgram, Texture2d& texture) const;
     const std::vector<Mesh>& GetMeshes() const;
@@ -29,4 +29,5 @@ private:
     void loadModel(const std::string& path);
     void processNode(aiNode* node, const aiScene* scene);
     Mesh processMesh(aiMesh* mesh, const aiScene* scene);
+    std::vector<Texture2d> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName);
 };

@@ -7,7 +7,6 @@
 
 Texture2d::Texture2d(const std::string& fileName)
 {
-	GLuint texture;
 	glGenTextures(1, &m_id);
 	glBindTexture(GL_TEXTURE_2D, m_id);
 
