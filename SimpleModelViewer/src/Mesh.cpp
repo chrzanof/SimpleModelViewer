@@ -3,7 +3,7 @@
 #include <iostream>
 
 Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices,
-	std::vector<Texture2d> textures) :
+	std::vector<std::shared_ptr<Texture2d>> textures) :
 m_Vertices(std::move(vertices)), m_Indices(std::move(indices)), m_Textures(std::move(textures)), m_VAO(0), m_VBO(0), m_EBO(0)
 {
 	setupMesh();
@@ -60,16 +60,15 @@ void Mesh::Unbind() const
 	glBindVertexArray(0);
 }
 
-void Mesh::Draw(ShaderProgram& shaderProgram, Texture2d& texture) const
+void Mesh::Draw(ShaderProgram& shaderProgram) const
 {
 	shaderProgram.Bind();
-	if (m_Textures.empty())
-		texture.Bind();
-	else
-		m_Textures[0].Bind();
+	if(!m_Textures.empty())
+		m_Textures[0]->Bind();
 	this->Bind();
 	glDrawElements(GL_TRIANGLES,  static_cast<GLsizei>(m_Indices.size()), GL_UNSIGNED_INT, 0);
 	this->Unbind();
-	texture.Unbind();
+	if (!m_Textures.empty())
+		m_Textures[0]->Unbind();
 	shaderProgram.Unbind();
 }

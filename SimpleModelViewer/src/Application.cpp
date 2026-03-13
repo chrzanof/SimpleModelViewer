@@ -22,9 +22,9 @@ m_Window(appSpecs.windowSpecs), m_LightPos(10.0f, 1.0f, -1.0f)
 
 	m_Program = std::make_unique<ShaderProgram>(appSpecs.vertexShaderPath, appSpecs.fragmentShaderPath);
 	m_TexturePathName = "models/wooden_crate.jpg";
-	m_Texture2d = std::make_unique<Texture2d>(m_TexturePathName.string());
 	m_ModelPathName = "models/cube.obj";
 	m_Model = std::make_unique<Model>(m_ModelPathName.string());
+	m_Model->AddTexture(m_TexturePathName.string());
 
 	InitImGui(m_Window.GetGLFWwindow());
 
@@ -121,8 +121,7 @@ void Application::DrawImGui()
 
 			if (!std::filesystem::is_directory(m_TexturePathName))
 			{
-				m_Texture2d = nullptr;
-				m_Texture2d = std::make_unique<Texture2d>(m_TexturePathName.string());
+				m_Model->AddTexture(m_TexturePathName.string());
 			}
 		}
 
@@ -167,8 +166,7 @@ void Application::Update()
 	if(droppedTexturePathName != "" && droppedTexturePathName != m_TexturePathName)
 	{
 		m_TexturePathName = droppedTexturePathName;
-		m_Texture2d.reset();
-		m_Texture2d = std::make_unique<Texture2d>(m_TexturePathName.string());
+		m_Model->AddTexture(m_TexturePathName.string());
 	}
 	m_Camera.UpdateOrbitalPositionAndRotation();
 }
@@ -193,9 +191,9 @@ void Application::Render()
 	glUniformMatrix4fv(projectionLocation, 1, GL_TRUE, projection.values);
 	glUniform3fv(lightPosLocation, 1, &m_LightPos.x);
 
-	if (m_Texture2d && m_Model)
+	if (m_Model)
 	{
-		m_Model->Draw(*m_Program, *m_Texture2d);
+		m_Model->Draw(*m_Program);
 	}
 
 

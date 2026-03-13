@@ -25,9 +25,43 @@ Texture2d::Texture2d(const std::string& fileName)
 	}
 	else
 	{
-		std::cout << "Failed to load texture\n";
+		std::cout << "Failed to load texture from path: " << fileName <<"\n";
 	}
 	stbi_image_free(data);
+	this->Unbind();
+}
+
+Texture2d::Texture2d(const aiTexture* aiTexture)
+{
+	glGenTextures(1, &m_id);
+	glBindTexture(GL_TEXTURE_2D, m_id);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	if(!aiTexture)
+	{
+		std::cout << "aiTexture is null!\n";
+		return;
+	}
+
+	if (aiTexture->mHeight)
+	{
+		GLint format = GL_RGBA;
+		glTexImage2D(GL_TEXTURE_2D, 0, format, (int)aiTexture->mWidth, (int)aiTexture->mHeight, 0, format, GL_UNSIGNED_BYTE, aiTexture->pcData);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		unsigned char* data = stbi_load_from_memory((unsigned char*)aiTexture->pcData, aiTexture->mWidth, &m_width, &m_height, &m_nrChannels, 0);
+		if (data)
+		{
+			GLint format = m_nrChannels == 4 ? GL_RGBA : GL_RGB;
+			glTexImage2D(GL_TEXTURE_2D, 0, format, m_width, m_height, 0, format, GL_UNSIGNED_BYTE, data);
+			glGenerateMipmap(GL_TEXTURE_2D);
+		}
+	}
 	this->Unbind();
 }
 

@@ -38,7 +38,6 @@ private:
     Camera m_Camera;
     std::unique_ptr<ShaderProgram> m_Program;
     std::unique_ptr<Model> m_Model;
-    std::unique_ptr<Texture2d> m_Texture2d;
     WorldTrans m_WorldTrans;
     Vector3f m_LightPos;
 

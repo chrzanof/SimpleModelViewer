@@ -6,11 +6,11 @@
 #include "ShaderProgram.h"
 #include "Texture2d.h"
 
-void Model::Draw(ShaderProgram& shaderProgram, Texture2d& texture) const
+void Model::Draw(ShaderProgram& shaderProgram) const
 {
 	for (unsigned int i = 0; i < meshes.size(); i++)
 	{
-        meshes[i].Draw(shaderProgram, texture);
+        meshes[i].Draw(shaderProgram);
 	}
 }
 
@@ -34,6 +34,24 @@ void Model::loadModel(const std::string& path)
     processNode(scene->mRootNode, scene);
 }
 
+void Model::AddTexture(const std::string& path)
+{
+    std::shared_ptr<Texture2d> texture2d;
+    if(auto search = usedTextures.find(path); search == usedTextures.end())
+    {
+        texture2d = std::make_shared<Texture2d>(path);
+        usedTextures.insert(std::make_pair(path, texture2d));
+    }
+    else
+    {
+        texture2d = search->second;
+    }
+    for(int i = 0; i < meshes.size(); i++)
+    {
+        meshes[i].m_Textures.insert(meshes[i].m_Textures.begin(), texture2d);
+    }
+}
+
 void Model::processNode(aiNode* node, const aiScene* scene)
 {
     for (unsigned int i = 0; i < node->mNumMeshes; i++)
@@ -52,7 +70,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 {
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
-    std::vector<Texture2d> textures;
+    std::vector<std::shared_ptr<Texture2d>> textures;
 
     for (unsigned int i = 0; i < mesh->mNumVertices; i++)
     {
@@ -81,26 +99,48 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 
     if(mesh->mMaterialIndex >= 0)
     {
-        aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-        textures = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
+        
+        textures = loadMaterialTextures(scene, mesh,aiTextureType_DIFFUSE, "texture_diffuse");
     }
 
     return Mesh{ vertices, indices, textures };
 }
 
-std::vector<Texture2d> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName)
+std::vector<std::shared_ptr<Texture2d>> Model::loadMaterialTextures(const aiScene* scene, aiMesh* mesh, aiTextureType type, std::string typeName)
 {
-    std::vector<Texture2d> textures;
+    aiMaterial* mat = scene->mMaterials[mesh->mMaterialIndex];
+    std::vector<std::shared_ptr<Texture2d>> textures;
     for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
     {
         aiString str;
         mat->GetTexture(type, i, &str);
         std::filesystem::path texturePath = str.C_Str();
         std::filesystem::path modelDir = directory;
-        modelDir =  modelDir.parent_path();
+        modelDir = modelDir.parent_path();
         modelDir /= texturePath;
-        std::string path = modelDir.string();
-        textures.emplace_back(path);
+        auto search = usedTextures.find(modelDir.string());
+        if(search == usedTextures.end())
+        {
+            if (str.C_Str()[0] == '*')
+            {
+                int index = str.C_Str()[1] - '0';
+                const aiTexture* texture = scene->mTextures[index];
+                auto texture2d = std::make_shared<Texture2d>(texture);
+                usedTextures.insert(std::make_pair(modelDir.string(), texture2d));
+                textures.push_back(texture2d);
+            }
+            else
+            {
+                auto texture2d = std::make_shared<Texture2d>(modelDir.string());
+                usedTextures.insert(std::make_pair(modelDir.string(), texture2d));
+                textures.push_back(texture2d);
+            }
+        }
+    	else
+        {
+            textures.push_back(search->second);
+        }
+        
     }
     return textures;
 }

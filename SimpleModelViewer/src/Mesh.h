@@ -1,4 +1,5 @@
 #pragma once
+#include <memory>
 #include <glad/glad.h> 
 #include <GLFW/glfw3.h>
 #include <vector>
@@ -14,9 +15,10 @@ struct Texture {
 
 class Mesh
 {
+	friend class Model;
 public:
 	Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices,
-		std::vector<Texture2d> textures);
+		std::vector<std::shared_ptr<Texture2d>> textures);
 	~Mesh();
 	Mesh(Mesh&& other) noexcept
 		: m_Vertices(std::move(other.m_Vertices)),
@@ -36,12 +38,12 @@ public:
 	const std::vector<unsigned int>& GetIndicesData() const;
 	void Bind() const;
 	void Unbind() const;
-	void Draw(ShaderProgram& shaderProgram, Texture2d& texture) const;
+	void Draw(ShaderProgram& shaderProgram) const;
 
 private:
 	std::vector<Vertex> m_Vertices;
 	std::vector<unsigned int> m_Indices;
-	std::vector<Texture2d> m_Textures;
+	std::vector<std::shared_ptr<Texture2d>> m_Textures;
 
 	GLuint m_VAO, m_VBO, m_EBO;
 };
