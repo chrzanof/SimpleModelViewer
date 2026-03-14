@@ -33,7 +33,7 @@ public:
 		other.m_EBO = 0;
 	}
 
-	void setupMesh();
+	void SetupMesh();
 	const std::vector<Vertex>& GetVerticesData() const;
 	const std::vector<unsigned int>& GetIndicesData() const;
 	void Bind() const;

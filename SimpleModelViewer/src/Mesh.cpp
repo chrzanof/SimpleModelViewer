@@ -6,7 +6,7 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices,
 	std::vector<std::shared_ptr<Texture2d>> textures) :
 m_Vertices(std::move(vertices)), m_Indices(std::move(indices)), m_Textures(std::move(textures)), m_VAO(0), m_VBO(0), m_EBO(0)
 {
-	setupMesh();
+	SetupMesh();
 }
 
 Mesh::~Mesh()
@@ -16,7 +16,7 @@ Mesh::~Mesh()
 	glDeleteBuffers(1, &m_EBO);
 }
 
-void Mesh::setupMesh()
+void Mesh::SetupMesh()
 {
 	glGenVertexArrays(1, &m_VAO);
 	glGenBuffers(1, &m_VBO);

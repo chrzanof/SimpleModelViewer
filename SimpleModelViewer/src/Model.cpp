@@ -19,7 +19,7 @@ const std::vector<Mesh>& Model::GetMeshes() const
     return meshes;
 }
 
-void Model::loadModel(const std::string& path)
+void Model::LoadModel(const std::string& path)
 {
     Assimp::Importer import;
     const aiScene * scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
@@ -31,7 +31,7 @@ void Model::loadModel(const std::string& path)
     }
     directory = path.substr(0, path.find_last_of('/'));
 
-    processNode(scene->mRootNode, scene);
+    ProcessNode(scene->mRootNode, scene);
 }
 
 void Model::AddTexture(const std::string& path)
@@ -52,21 +52,21 @@ void Model::AddTexture(const std::string& path)
     }
 }
 
-void Model::processNode(aiNode* node, const aiScene* scene)
+void Model::ProcessNode(aiNode* node, const aiScene* scene)
 {
     for (unsigned int i = 0; i < node->mNumMeshes; i++)
     {
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-        meshes.push_back(processMesh(mesh, scene));
+        meshes.push_back(ProcessMesh(mesh, scene));
     }
     
     for (unsigned int i = 0; i < node->mNumChildren; i++)
     {
-        processNode(node->mChildren[i], scene);
+        ProcessNode(node->mChildren[i], scene);
     }
 }
 
-Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
+Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 {
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
@@ -100,13 +100,13 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
     if(mesh->mMaterialIndex >= 0)
     {
         
-        textures = loadMaterialTextures(scene, mesh,aiTextureType_DIFFUSE, "texture_diffuse");
+        textures = LoadMaterialTextures(scene, mesh,aiTextureType_DIFFUSE, "texture_diffuse");
     }
 
     return Mesh{ vertices, indices, textures };
 }
 
-std::vector<std::shared_ptr<Texture2d>> Model::loadMaterialTextures(const aiScene* scene, aiMesh* mesh, aiTextureType type, std::string typeName)
+std::vector<std::shared_ptr<Texture2d>> Model::LoadMaterialTextures(const aiScene* scene, aiMesh* mesh, aiTextureType type, std::string typeName)
 {
     aiMaterial* mat = scene->mMaterials[mesh->mMaterialIndex];
     std::vector<std::shared_ptr<Texture2d>> textures;
@@ -118,29 +118,79 @@ std::vector<std::shared_ptr<Texture2d>> Model::loadMaterialTextures(const aiScen
         std::filesystem::path modelDir = directory;
         modelDir = modelDir.parent_path();
         modelDir /= texturePath;
+
+        // check if texture is already loaded
         auto search = usedTextures.find(modelDir.string());
-        if(search == usedTextures.end())
-        {
-            if (str.C_Str()[0] == '*')
-            {
-                int index = str.C_Str()[1] - '0';
-                const aiTexture* texture = scene->mTextures[index];
-                auto texture2d = std::make_shared<Texture2d>(texture);
-                usedTextures.insert(std::make_pair(modelDir.string(), texture2d));
-                textures.push_back(texture2d);
-            }
-            else
-            {
-                auto texture2d = std::make_shared<Texture2d>(modelDir.string());
-                usedTextures.insert(std::make_pair(modelDir.string(), texture2d));
-                textures.push_back(texture2d);
-            }
-        }
-    	else
+        if(search != usedTextures.end())
         {
             textures.push_back(search->second);
+            continue;
         }
-        
+        // check if texture is embedded (path: "*N")
+        if (str.C_Str()[0] == '*')
+        {
+            int index = str.C_Str()[1] - '0';
+            const aiTexture* texture = scene->mTextures[index];
+            auto texture2d = std::make_shared<Texture2d>(texture);
+            usedTextures.insert(std::make_pair(modelDir.string(), texture2d));
+            textures.push_back(texture2d);
+            continue;
+        }
+        // check if path to external texture is correct
+        if (!std::filesystem::exists(modelDir))
+        {
+            std::filesystem::path fileName = texturePath.filename();
+            modelDir = FindCorrectPath(fileName);
+        }
+        // if path was found then load texture
+        if (modelDir != "")
+        {
+            auto texture2d = std::make_shared<Texture2d>(modelDir.string());
+            usedTextures.insert(std::make_pair(modelDir.string(), texture2d));
+            textures.push_back(texture2d);
+        }
+
     }
     return textures;
+}
+
+const std::filesystem::path Model::FindCorrectPath(std::filesystem::path fileName) const
+{
+    std::filesystem::path modelBasePath = std::filesystem::path(directory).parent_path();
+    
+    std::vector < std::string > folders = {
+		"textures",
+    	"Textures",
+        "texture",
+        "Texture",
+        "maps",
+        "Maps",
+        "materials",
+        "Materials",
+		"images",
+		"Images",
+        "pbr",
+		"PBR"
+    };
+    std::vector<std::filesystem::path> candidates;
+
+    candidates.emplace_back(modelBasePath / fileName);
+    candidates.emplace_back(modelBasePath.parent_path() / fileName);
+    candidates.emplace_back(modelBasePath.parent_path().parent_path() / fileName);
+    
+
+    for (const auto & folder : folders)
+    {
+        candidates.emplace_back(modelBasePath / folder /fileName);
+        candidates.emplace_back(modelBasePath.parent_path() / folder / fileName);
+        candidates.emplace_back(modelBasePath.parent_path().parent_path() / folder / fileName);
+    }
+
+    for (const auto & candidate : candidates)
+    {
+        if (std::filesystem::exists(candidate))
+            return candidate;
+    }
+ 
+    return "";
 }
