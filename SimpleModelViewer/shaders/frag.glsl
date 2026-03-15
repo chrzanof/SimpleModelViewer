@@ -5,7 +5,7 @@ in vec3 Normal;
 in vec3 LightPos;
 in vec2 TexCoord;
 
-uniform sampler2D ourTexture;
+uniform sampler2D diffuseTexture;
 
 out vec4 FragColor;
 
@@ -22,12 +22,23 @@ void main()
 	vec3 diffuse = max(dot(norm, lightDir), 0.0f) * lightColor;
 
 	//Specular
-	float specularStrength = 0.5f;
+	float specularStrength = 1.0f;
 	vec3 viewDir = normalize(-vec3(MVPosition));
 	vec3 reflectDir = reflect(-lightDir, norm);
 	float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
-	vec3 specular = specularStrength * spec * lightColor; 
-	vec4 texColor = vec4(ambient + diffuse + specular, 1.0f) * texture(ourTexture, TexCoord);
+	vec3 specular = specularStrength * spec * lightColor;
+
+	vec4 basicColor;
+	
+	if(textureSize(diffuseTexture, 0) == 1)
+	{
+		basicColor = vec4(0.5f, 0.5f, 0.5f, 1.0f);
+	}
+	else
+	{
+		basicColor = texture(diffuseTexture, TexCoord);
+	}
+	vec4 texColor = vec4(ambient + diffuse + specular, 1.0f) * basicColor;
 
 	if(texColor.a < 0.1)
 		discard;
