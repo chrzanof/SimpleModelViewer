@@ -82,9 +82,8 @@ void Camera::FocusOn(const Model& model, const WorldTrans& worldTrans)
 {
 	// calculate bounding box
 	auto& meshes = model.GetMeshes();
-	auto firstVertex = meshes.at(0).GetVerticesData().at(0).position;
-	float minX{firstVertex.x}, minY{firstVertex.y}, minZ{firstVertex.z},
-	maxX{firstVertex.x}, maxY{firstVertex.y}, maxZ{firstVertex.z};
+	float minX{0}, minY{0}, minZ{0},
+	maxX{0}, maxY{0}, maxZ{0};
 	for(auto& mesh : meshes)
 	{
 		for(auto& vertex : mesh.GetVerticesData())
