@@ -3,6 +3,7 @@
 in vec4 MVPosition;
 in vec3 Normal;
 in vec3 LightPos;
+in vec3 LightColor;
 in vec2 TexCoord;
 
 uniform sampler2D diffuseTexture;
@@ -12,21 +13,20 @@ out vec4 FragColor;
 void main()
 {
 	//Ambient
-	vec3 lightColor = vec3(1.0f, 1.0f, 1.0f);
 	float ambientStrength = 1.0f;
-	vec3 ambient = ambientStrength * lightColor;
+	vec3 ambient = ambientStrength * LightColor;
 
 	//Diffuse
 	vec3 norm = normalize(Normal);
 	vec3 lightDir = normalize(LightPos - vec3(MVPosition));
-	vec3 diffuse = max(dot(norm, lightDir), 0.0f) * lightColor;
+	vec3 diffuse = max(dot(norm, lightDir), 0.0f) * LightColor;
 
 	//Specular
 	float specularStrength = 1.0f;
 	vec3 viewDir = normalize(-vec3(MVPosition));
 	vec3 reflectDir = reflect(-lightDir, norm);
 	float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
-	vec3 specular = specularStrength * spec * lightColor;
+	vec3 specular = specularStrength * spec * LightColor;
 
 	vec4 basicColor;
 	

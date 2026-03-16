@@ -25,6 +25,7 @@ public:
     }
     void Draw(ShaderProgram& shaderProgram) const;
     const std::vector<Mesh>& GetMeshes() const;
+    Vector3f GetLargestDiagonal() const;
     void AddTexture(const std::string& path);
 private:
     std::vector<Mesh> meshes;

@@ -19,6 +19,26 @@ const std::vector<Mesh>& Model::GetMeshes() const
     return meshes;
 }
 
+Vector3f Model::GetLargestDiagonal() const
+{
+    float minX{ 0 }, minY{ 0 }, minZ{ 0 },
+        maxX{ 0 }, maxY{ 0 }, maxZ{ 0 };
+    for (auto& mesh : meshes)
+    {
+        for (auto& vertex : mesh.GetVerticesData())
+        {
+            minX = std::min(minX, vertex.position.x);
+            minY = std::min(minY, vertex.position.y);
+            minZ = std::min(minZ, vertex.position.z);
+
+            maxX = std::max(maxX, vertex.position.x);
+            maxY = std::max(maxY, vertex.position.y);
+            maxZ = std::max(maxZ, vertex.position.z);
+        }
+    }
+    return { maxX - minX, maxY - minY, maxZ - minZ };
+}
+
 void Model::LoadModel(const std::string& path)
 {
     Assimp::Importer import;

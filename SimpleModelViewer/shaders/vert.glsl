@@ -8,10 +8,12 @@ uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 uniform vec3 lightPos;
+uniform vec3 lightColor;
 
 out vec4 MVPosition;
 out vec3 Normal;
 out vec3 LightPos;
+out vec3 LightColor;
 out vec2 TexCoord;
 
 void main()
@@ -20,5 +22,6 @@ void main()
 	Normal = transpose(inverse(mat3(view * model))) * aNormal;
 	MVPosition = view * model * vec4(aPos, 1.0f);
 	LightPos = vec3(view * vec4(lightPos, 1.0f));
+	LightColor = lightColor;
 	gl_Position = projection * view * model * vec4(aPos, 1.0f);
 } 

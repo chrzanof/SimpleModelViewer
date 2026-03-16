@@ -40,6 +40,8 @@ private:
     std::unique_ptr<Model> m_Model;
     WorldTrans m_WorldTrans;
     Vector3f m_LightPos;
+    Vector3f m_LightColor;
+    float m_LightPosMinMax = 10.0f;
 
     std::filesystem::path m_TexturePathName = "";
     std::filesystem::path m_ModelPathName = "";
@@ -61,8 +63,9 @@ private:
 
     static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
     {
-        ImGuiIO& io = ImGui::GetIO();
-        if (io.WantCaptureMouse) return;
+        // ImGuiIO& io = ImGui::GetIO();
+        // if (io.WantCaptureMouse) 
+        //     return;
         MouseInput::offsetX = static_cast<float>(xoffset);
         MouseInput::offsetY = static_cast<float>(yoffset);
     }

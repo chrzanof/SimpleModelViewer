@@ -8,7 +8,7 @@
 #include "math/Vector4f.h"
 
 Application::Application(ApplicationSpecs appSpecs):
-m_Window(appSpecs.windowSpecs), m_LightPos(10.0f, 1.0f, -1.0f)
+m_Window(appSpecs.windowSpecs), m_LightPos(10.0f, 1.0f, -1.0f), m_LightColor(1.0f, 1.0f, 1.0f)
 {
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
@@ -108,6 +108,7 @@ void Application::DrawImGui()
 			{
 				m_Model = nullptr;
 				m_Model = std::make_unique<Model>(m_ModelPathName.string());
+				m_LightPosMinMax = m_Model->GetLargestDiagonal().Length() * 10.0f;
 			}
 		}
 
@@ -127,6 +128,10 @@ void Application::DrawImGui()
 
 		ImGuiFileDialog::Instance()->Close();
 	}
+
+	ImGui::SliderFloat3("Light Position", &m_LightPos.x, -m_LightPosMinMax, m_LightPosMinMax);
+	ImGui::SliderFloat3("Light Color", &m_LightColor.x, 0.0f, 1.f);
+	
 
 	ImGui::End();
 }
@@ -162,6 +167,7 @@ void Application::Update()
 		m_Model.reset();
 		m_Model = std::make_unique<Model>(m_ModelPathName.string());
 		m_Camera.FocusOn(*m_Model, m_WorldTrans);
+		m_LightPosMinMax = m_Model->GetLargestDiagonal().Length() * 10.0f;
 	}
 	if(droppedTexturePathName != "" && droppedTexturePathName != m_TexturePathName)
 	{
@@ -178,6 +184,7 @@ void Application::Render()
 	GLuint viewLocation = glGetUniformLocation(m_Program->GetId(), "view");
 	GLuint projectionLocation = glGetUniformLocation(m_Program->GetId(), "projection");
 	GLuint lightPosLocation = glGetUniformLocation(m_Program->GetId(), "lightPos");
+	GLuint lightColorLocation = glGetUniformLocation(m_Program->GetId(), "lightColor");
 
 	auto model = m_WorldTrans.GetMatrix();
 	auto view = m_Camera.GetViewMatrix();
@@ -190,6 +197,7 @@ void Application::Render()
 	glUniformMatrix4fv(viewLocation, 1, GL_TRUE, view.values);
 	glUniformMatrix4fv(projectionLocation, 1, GL_TRUE, projection.values);
 	glUniform3fv(lightPosLocation, 1, &m_LightPos.x);
+	glUniform3fv(lightColorLocation, 1, &m_LightColor.x);
 
 	if (m_Model)
 	{
