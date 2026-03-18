@@ -2,7 +2,7 @@
 #include <math.h>
 #include "Vector3f.h"
 
-class Matrix3x3_f
+struct Matrix3x3_f
 {
 public:
 	float values[9];

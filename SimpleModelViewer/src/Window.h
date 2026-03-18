@@ -1,4 +1,5 @@
 #pragma once
+
 #include <string>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -19,10 +20,10 @@ class Window
 public:
 	Window(WindowSpecs windowSpecs);
 	~Window();
+
 	void ProcessInput();
 	int ShouldClose();
 	void Terminate();
-
 	void SetViewport(int x, int y, int width, int height);
 	int GetWidth() const;
 	int GetHeight() const;
@@ -35,12 +36,11 @@ public:
 	GLFWwindow* GetGLFWwindow() const;
 
 private:
-
 	bool IsLeftMouseButtonClicked() const;
 	bool IsRightMouseButtonClicked() const;
 	Vector2f GetCursorPosition() const;
 
-
+private:
 	GLFWwindow* m_Window;
 	int m_Width;
 	int m_Height;

@@ -4,10 +4,13 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
+#include "Input.h"
+#include "imgui/backends/imgui_impl_glfw.h"
+#include "imgui/backends/imgui_impl_opengl3.h"
 #include "math/Matrix3x3_f.h"
 #include "math/Vector4f.h"
 
-Application::Application(ApplicationSpecs appSpecs):
+Application::Application(const ApplicationSpecs& appSpecs):
 m_Window(appSpecs.windowSpecs), m_LightPos(10.0f, 1.0f, -1.0f), m_LightColor(1.0f, 1.0f, 1.0f)
 {
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -17,14 +20,14 @@ m_Window(appSpecs.windowSpecs), m_LightPos(10.0f, 1.0f, -1.0f), m_LightColor(1.0
 	}
 
 	m_Window.SetViewport(0, 0, m_Window.GetWidth(), m_Window.GetHeight());
-	m_Window.SetScrollCallback(scroll_callback);
-	m_Window.SetDropCallback(drop_callback);
+	m_Window.SetScrollCallback(ScrollCallback);
+	m_Window.SetDropCallback(DropCallback);
 
 	m_Program = std::make_unique<ShaderProgram>(appSpecs.vertexShaderPath, appSpecs.fragmentShaderPath);
-	m_TexturePathName = "models/wooden_crate.jpg";
-	m_ModelPathName = "models/cube.obj";
-	m_Model = std::make_unique<Model>(m_ModelPathName.string());
-	m_Model->AddTexture(m_TexturePathName.string());
+	m_TexturePath = "models/wooden_crate.jpg";
+	m_ModelPath = "models/cube.obj";
+	m_Model = std::make_unique<Model>(m_ModelPath.string());
+	m_Model->AddTexture(m_TexturePath.string());
 
 	InitImGui(m_Window.GetGLFWwindow());
 
@@ -37,9 +40,9 @@ m_Window(appSpecs.windowSpecs), m_LightPos(10.0f, 1.0f, -1.0f), m_LightColor(1.0
 	m_WorldTrans.SetRotation(0.0f, 0.0f, 0.0f);
 	m_WorldTrans.SetScale(1.0f);
 
-	m_Camera.SetFov(ToRadians(90.0f));
-	m_Camera.SetNear(0.1f);
-	m_Camera.SetFar(1.0f);
+	m_Camera.SetFov(TO_RADIANS(90.0f));
+	m_Camera.SetNearPlane(0.1f);
+	m_Camera.SetFarPlane(1.0f);
 	m_Camera.FocusOn(*m_Model, m_WorldTrans);
 }
 
@@ -74,7 +77,7 @@ void Application::DrawImGui()
 {
 	ImGui::Begin("Model Viewer Controls");
 
-	ImGui::TextWrapped("Model: %s", m_ModelPathName.filename().string().c_str());
+	ImGui::TextWrapped("Model: %s", m_ModelPath.filename().string().c_str());
 	if (ImGui::Button("Choose model..."))
 	{
 		ImGuiFileDialog::Instance()->OpenDialog(
@@ -84,7 +87,7 @@ void Application::DrawImGui()
 		);
 
 	}
-	ImGui::TextWrapped("Texture: %s", m_TexturePathName.filename().string().c_str());
+	ImGui::TextWrapped("Texture: %s", m_TexturePath.filename().string().c_str());
 	if (ImGui::Button("Choose texture..."))
 	{
 		ImGuiFileDialog::Instance()->OpenDialog(
@@ -102,13 +105,13 @@ void Application::DrawImGui()
 	{
 		if (ImGuiFileDialog::Instance()->IsOk())
 		{
-			m_ModelPathName = ImGuiFileDialog::Instance()->GetFilePathName();
+			m_ModelPath = ImGuiFileDialog::Instance()->GetFilePathName();
 
-			if (!std::filesystem::is_directory(m_ModelPathName))
+			if (!std::filesystem::is_directory(m_ModelPath))
 			{
 				m_Model = nullptr;
-				m_Model = std::make_unique<Model>(m_ModelPathName.string());
-				m_LightPosMinMax = m_Model->GetLargestDiagonal().Length() * 10.0f;
+				m_Model = std::make_unique<Model>(m_ModelPath.string());
+				m_LightPosLimit = m_Model->GetLargestDiagonal().Length() * 10.0f;
 			}
 		}
 
@@ -118,23 +121,24 @@ void Application::DrawImGui()
 	{
 		if (ImGuiFileDialog::Instance()->IsOk())
 		{
-			m_TexturePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+			m_TexturePath = ImGuiFileDialog::Instance()->GetFilePathName();
 
-			if (!std::filesystem::is_directory(m_TexturePathName))
+			if (!std::filesystem::is_directory(m_TexturePath))
 			{
-				m_Model->AddTexture(m_TexturePathName.string());
+				m_Model->AddTexture(m_TexturePath.string());
 			}
 		}
 
 		ImGuiFileDialog::Instance()->Close();
 	}
 
-	ImGui::SliderFloat3("Light Position", &m_LightPos.x, -m_LightPosMinMax, m_LightPosMinMax);
+	ImGui::SliderFloat3("Light Position", &m_LightPos.x, -m_LightPosLimit, m_LightPosLimit);
 	ImGui::SliderFloat3("Light Color", &m_LightColor.x, 0.0f, 1.f);
 	
 
 	ImGui::End();
 }
+
 
 void Application::Run()
 {
@@ -155,24 +159,24 @@ void Application::ProcessInput()
 	m_Window.ProcessInput();
 	m_Camera.ProcessInput();
 
-	MouseInput::offsetX = 0.0f;
-	MouseInput::offsetY = 0.0f;
+	MouseInput::s_OffsetX = 0.0f;
+	MouseInput::s_OffsetY = 0.0f;
 }
 
 void Application::Update()
 {
-	if(droppedModelPathName != "" && droppedModelPathName != m_ModelPathName)
+	if(s_DroppedModelPath != "" && s_DroppedModelPath != m_ModelPath)
 	{
-		m_ModelPathName = droppedModelPathName;
+		m_ModelPath = s_DroppedModelPath;
 		m_Model.reset();
-		m_Model = std::make_unique<Model>(m_ModelPathName.string());
+		m_Model = std::make_unique<Model>(m_ModelPath.string());
 		m_Camera.FocusOn(*m_Model, m_WorldTrans);
-		m_LightPosMinMax = m_Model->GetLargestDiagonal().Length() * 10.0f;
+		m_LightPosLimit = m_Model->GetLargestDiagonal().Length() * 10.0f;
 	}
-	if(droppedTexturePathName != "" && droppedTexturePathName != m_TexturePathName)
+	if(s_DroppedTexturePath != "" && s_DroppedTexturePath != m_TexturePath)
 	{
-		m_TexturePathName = droppedTexturePathName;
-		m_Model->AddTexture(m_TexturePathName.string());
+		m_TexturePath = s_DroppedTexturePath;
+		m_Model->AddTexture(m_TexturePath.string());
 	}
 	m_Camera.UpdateOrbitalPositionAndRotation();
 }
@@ -217,6 +221,34 @@ void Application::Render()
 void Application::Destroy()
 {
 	glfwTerminate();
+}
+
+void Application::ScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	MouseInput::s_OffsetX = static_cast<float>(xoffset);
+	MouseInput::s_OffsetY = static_cast<float>(yoffset);
+}
+
+void Application::DropCallback(GLFWwindow* window, int count, const char** paths)
+{
+
+	for (int i = 0; i < count; i++)
+	{
+		std::filesystem::path droppedFilePath(paths[i]);
+		std::string extension = droppedFilePath.extension().string();
+
+		if (std::find(s_TextureExtensions.begin(), s_TextureExtensions.end(), extension) != s_TextureExtensions.end())
+		{
+			s_DroppedTexturePath = droppedFilePath;
+			continue;
+		}
+
+		if (std::find(s_AssimpExtensions.begin(), s_AssimpExtensions.end(), extension) != s_AssimpExtensions.end())
+		{
+			s_DroppedModelPath = droppedFilePath;
+		}
+	}
+
 }
 
 

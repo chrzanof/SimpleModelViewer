@@ -3,12 +3,12 @@
 
 struct MouseInput
 {
-	static float offsetX;
-	static float offsetY;
+	static float s_OffsetX;
+	static float s_OffsetY;
 
-	static bool leftButtonClicked;
-	static bool rightButtonClicked;
+	static bool s_LeftButtonClicked;
+	static bool s_RightButtonClicked;
 
-	static Vector2f position;
-	static Vector2f lastPosition;
+	static Vector2f s_Position;
+	static Vector2f s_LastPosition;
 };

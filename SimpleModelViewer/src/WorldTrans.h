@@ -15,9 +15,9 @@ public:
 	Matrix4x4_f GetMatrix() const;
 
 private:
-	Vector3f m_scale    = Vector3f(1.0f, 1.0f, 1.0f);
-	Vector3f m_rotation = Vector3f(0.0f, 0.0f, 0.0f);
-	Vector3f m_position = Vector3f(0.0f, 0.0f, 0.0f);
+	Vector3f m_Scale	{ 1.0f, 1.0f, 1.0f };
+	Vector3f m_Rotation	{ 0.0f, 0.0f, 0.0f };
+	Vector3f m_Position	{ 0.0f, 0.0f, 0.0f };
 
 };
 

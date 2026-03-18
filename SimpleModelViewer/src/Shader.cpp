@@ -14,36 +14,37 @@ Shader::Shader(ShaderType type, const std::string& filePath)
 
 	std::stringstream buffer;
 	buffer << file.rdbuf();
-	m_source = buffer.str();
+	m_Source = buffer.str();
 
-	m_id = glCreateShader(static_cast<GLenum>(type));
-	const char* sourceCStr = m_source.c_str();
-	glShaderSource(m_id, 1, &sourceCStr, NULL);
-	glCompileShader(m_id);
+	m_Id = glCreateShader(static_cast<GLenum>(type));
+	const char* sourceCStr = m_Source.c_str();
+	glShaderSource(m_Id, 1, &sourceCStr, NULL);
+	glCompileShader(m_Id);
 
 	GLint shaderCompiled;
-	glGetShaderiv(m_id, GL_COMPILE_STATUS, &shaderCompiled);
+	glGetShaderiv(m_Id, GL_COMPILE_STATUS, &shaderCompiled);
 	if (shaderCompiled != GL_TRUE)
 	{
 		GLsizei log_length = 0;
 		GLchar message[1024];
-		glGetShaderInfoLog(m_id, 1024, &log_length, message);
+		glGetShaderInfoLog(m_Id, 1024, &log_length, message);
 		std::cout << message;
 	}
 }
 
 void Shader::Delete()
 {
-	glDeleteShader(m_id);
+	glDeleteShader(m_Id);
+	m_Id = 0;
 }
 
 GLuint Shader::GetId() const
 {
-	return m_id;
+	return m_Id;
 }
 
 const std::string& Shader::GetSource()
 {
-	return m_source;
+	return m_Source;
 }
 

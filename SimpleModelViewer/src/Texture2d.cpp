@@ -7,20 +7,20 @@
 
 Texture2d::Texture2d(const std::string& fileName)
 {
-	glGenTextures(1, &m_id);
-	glBindTexture(GL_TEXTURE_2D, m_id);
+	glGenTextures(1, &m_Id);
+	glBindTexture(GL_TEXTURE_2D, m_Id);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	unsigned char* data = stbi_load(fileName.c_str(), &m_width, &m_height, &m_nrChannels, 0);
+	unsigned char* data = stbi_load(fileName.c_str(), &m_Width, &m_Height, &m_NrChannels, 0);
 
 	if (data)
 	{
-		GLint format = m_nrChannels == 4 ? GL_RGBA : GL_RGB;
-		glTexImage2D(GL_TEXTURE_2D, 0, format, m_width, m_height, 0, format, GL_UNSIGNED_BYTE, data);
+		GLint format = m_NrChannels == 4 ? GL_RGBA : GL_RGB;
+		glTexImage2D(GL_TEXTURE_2D, 0, format, m_Width, m_Height, 0, format, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
 	else
@@ -33,8 +33,8 @@ Texture2d::Texture2d(const std::string& fileName)
 
 Texture2d::Texture2d(const aiTexture* aiTexture)
 {
-	glGenTextures(1, &m_id);
-	glBindTexture(GL_TEXTURE_2D, m_id);
+	glGenTextures(1, &m_Id);
+	glBindTexture(GL_TEXTURE_2D, m_Id);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -54,11 +54,11 @@ Texture2d::Texture2d(const aiTexture* aiTexture)
 	}
 	else
 	{
-		unsigned char* data = stbi_load_from_memory((unsigned char*)aiTexture->pcData, aiTexture->mWidth, &m_width, &m_height, &m_nrChannels, 0);
+		unsigned char* data = stbi_load_from_memory((unsigned char*)aiTexture->pcData, aiTexture->mWidth, &m_Width, &m_Height, &m_NrChannels, 0);
 		if (data)
 		{
-			GLint format = m_nrChannels == 4 ? GL_RGBA : GL_RGB;
-			glTexImage2D(GL_TEXTURE_2D, 0, format, m_width, m_height, 0, format, GL_UNSIGNED_BYTE, data);
+			GLint format = m_NrChannels == 4 ? GL_RGBA : GL_RGB;
+			glTexImage2D(GL_TEXTURE_2D, 0, format, m_Width, m_Height, 0, format, GL_UNSIGNED_BYTE, data);
 			glGenerateMipmap(GL_TEXTURE_2D);
 		}
 	}
@@ -67,7 +67,7 @@ Texture2d::Texture2d(const aiTexture* aiTexture)
 
 void Texture2d::Bind() const
 {
-	glBindTexture(GL_TEXTURE_2D, m_id);
+	glBindTexture(GL_TEXTURE_2D, m_Id);
 }
 
 void Texture2d::Unbind() const
@@ -77,20 +77,20 @@ void Texture2d::Unbind() const
 
 unsigned int Texture2d::GetId() const
 {
-	return m_id;
+	return m_Id;
 }
 
 int Texture2d::GetWidth() const
 {
-	return m_width;
+	return m_Width;
 }
 
 int Texture2d::GetHeight() const
 {
-	return m_height;
+	return m_Height;
 }
 
 int Texture2d::GetNrChannels() const
 {
-	return m_nrChannels;
+	return m_NrChannels;
 }

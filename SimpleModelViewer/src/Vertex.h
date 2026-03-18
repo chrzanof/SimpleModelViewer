@@ -1,21 +1,20 @@
 #pragma once
 
 #include "math/Vector3f.h"
-#include "math/Vector3f.h"
 #include "math/Vector2f.h"
 
-class Vertex
+struct Vertex
 {
 public:
 	Vector3f position;
 	Vector3f normal;
 	Vector2f uv;
 
-	Vertex(Vector3f position, Vector3f normal, Vector2f texCoord)
+	Vertex(Vector3f position, Vector3f normal, Vector2f uv)
 	:
 	position(position),
 	normal(normal),
-	uv(texCoord) {}
+	uv(uv) {}
 
 	Vertex(float x, float y, float z,
 	       float nx, float ny, float nz,

@@ -17,7 +17,7 @@ public:
 	const std::string& GetSource();
 
 private:
-	GLuint m_id;
-	std::string m_source;
+	GLuint m_Id;
+	std::string m_Source;
 };
 

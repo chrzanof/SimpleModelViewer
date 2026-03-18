@@ -4,10 +4,7 @@
 class ShaderProgram
 {
 public:
-
-
 	ShaderProgram(Shader&& vertexShader, Shader&& fragmentShader);
-
 	ShaderProgram(const std::string& vertexShaderFilePath,
 	              const std::string& fragmentShaderFilePath);
 
@@ -16,6 +13,6 @@ public:
 	void Unbind() const;
 
 private:
-	GLuint m_id;
+	GLuint m_Id;
 };
 

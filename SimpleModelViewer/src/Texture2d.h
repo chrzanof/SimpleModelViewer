@@ -15,7 +15,7 @@ public:
 	int GetNrChannels() const;
 
 private:
-	unsigned int m_id;
-	int m_width, m_height, m_nrChannels;
+	unsigned int m_Id;
+	int m_Width, m_Height, m_NrChannels;
 };
 

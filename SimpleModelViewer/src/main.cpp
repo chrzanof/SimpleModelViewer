@@ -1,13 +1,18 @@
 #include "Application.h"
 
+//TODO: use size callback somewhere. Probably should move this definition to Application.h
 static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
 int main()
 {
-	WindowSpecs window_specs{ 1500, 1000, "Model Viewer" };
+	WindowSpecs windowSpecs {
+		.width{ 1500 },
+		.height{ 1000 },
+		.title{"Model Viewer" }
+	};
 
 	ApplicationSpecs appSpecs {
-		window_specs,
+		windowSpecs,
 		"shaders/vert.glsl",
 		"shaders/frag.glsl"
 	};

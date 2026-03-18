@@ -6,6 +6,8 @@ Window::Window(WindowSpecs windowSpecs)
 	m_Width = windowSpecs.width;
 	m_Height = windowSpecs.height;
 	m_Title = windowSpecs.title;
+	m_VersionMajor = windowSpecs.versionMajor;
+	m_VersionMinor = windowSpecs.versionMinor;
 	
 	if (!glfwInit())
 	{
@@ -40,10 +42,10 @@ void Window::ProcessInput()
 		glfwSetWindowShouldClose(m_Window, GLFW_TRUE);
 	}
 
-	MouseInput::lastPosition = MouseInput::position;
-	MouseInput::position = GetCursorPosition();
-	MouseInput::leftButtonClicked = IsLeftMouseButtonClicked();
-	MouseInput::rightButtonClicked = IsRightMouseButtonClicked();
+	MouseInput::s_LastPosition = MouseInput::s_Position;
+	MouseInput::s_Position = GetCursorPosition();
+	MouseInput::s_LeftButtonClicked = IsLeftMouseButtonClicked();
+	MouseInput::s_RightButtonClicked = IsRightMouseButtonClicked();
 }
 
 int Window::ShouldClose()

@@ -1,17 +1,10 @@
 #pragma once
 #include <memory>
 #include <glad/glad.h> 
-#include <GLFW/glfw3.h>
 #include <vector>
-
 #include "ShaderProgram.h"
 #include "Texture2d.h"
 #include "Vertex.h"
-
-struct Texture {
-	unsigned int id;
-	std::string type;
-};
 
 class Mesh
 {
@@ -47,4 +40,3 @@ private:
 
 	GLuint m_VAO, m_VBO, m_EBO;
 };
-

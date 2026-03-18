@@ -2,28 +2,34 @@
 
 #include <filesystem>
 #include <iostream>
-
+#include <assimp/postprocess.h>
 #include "ShaderProgram.h"
 #include "Texture2d.h"
 
+Model::Model(std::vector<Vertex> vertices, std::vector<unsigned int> indices,
+    std::vector<std::shared_ptr<Texture2d>> textures): m_Directory("none")
+{
+    m_Meshes.emplace_back(std::move(vertices), std::move(indices), std::move(textures));
+}
+
 void Model::Draw(ShaderProgram& shaderProgram) const
 {
-	for (unsigned int i = 0; i < meshes.size(); i++)
+	for (unsigned int i = 0; i < m_Meshes.size(); i++)
 	{
-        meshes[i].Draw(shaderProgram);
+        m_Meshes[i].Draw(shaderProgram);
 	}
 }
 
 const std::vector<Mesh>& Model::GetMeshes() const
 {
-    return meshes;
+    return m_Meshes;
 }
 
 Vector3f Model::GetLargestDiagonal() const
 {
     float minX{ 0 }, minY{ 0 }, minZ{ 0 },
         maxX{ 0 }, maxY{ 0 }, maxZ{ 0 };
-    for (auto& mesh : meshes)
+    for (auto& mesh : m_Meshes)
     {
         for (auto& vertex : mesh.GetVerticesData())
         {
@@ -49,7 +55,7 @@ void Model::LoadModel(const std::string& path)
         std::cout << "ERROR::ASSIMP::" << import.GetErrorString() << std::endl;
         return;
     }
-    directory = path.substr(0, path.find_last_of('/'));
+    m_Directory = path.substr(0, path.find_last_of('/'));
 
     ProcessNode(scene->mRootNode, scene);
 }
@@ -57,18 +63,18 @@ void Model::LoadModel(const std::string& path)
 void Model::AddTexture(const std::string& path)
 {
     std::shared_ptr<Texture2d> texture2d;
-    if(auto search = usedTextures.find(path); search == usedTextures.end())
+    if(auto search = m_LoadedTextures.find(path); search == m_LoadedTextures.end())
     {
         texture2d = std::make_shared<Texture2d>(path);
-        usedTextures.insert(std::make_pair(path, texture2d));
+        m_LoadedTextures.insert(std::make_pair(path, texture2d));
     }
     else
     {
         texture2d = search->second;
     }
-    for(int i = 0; i < meshes.size(); i++)
+    for(int i = 0; i < m_Meshes.size(); i++)
     {
-        meshes[i].m_Textures.insert(meshes[i].m_Textures.begin(), texture2d);
+        m_Meshes[i].m_Textures.insert(m_Meshes[i].m_Textures.begin(), texture2d);
     }
 }
 
@@ -77,7 +83,7 @@ void Model::ProcessNode(aiNode* node, const aiScene* scene)
     for (unsigned int i = 0; i < node->mNumMeshes; i++)
     {
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-        meshes.push_back(ProcessMesh(mesh, scene));
+        m_Meshes.push_back(ProcessMesh(mesh, scene));
     }
     
     for (unsigned int i = 0; i < node->mNumChildren; i++)
@@ -135,13 +141,13 @@ std::vector<std::shared_ptr<Texture2d>> Model::LoadMaterialTextures(const aiScen
         aiString str;
         mat->GetTexture(type, i, &str);
         std::filesystem::path texturePath = str.C_Str();
-        std::filesystem::path modelDir = directory;
+        std::filesystem::path modelDir = m_Directory;
         modelDir = modelDir.parent_path();
         modelDir /= texturePath;
 
         // check if texture is already loaded
-        auto search = usedTextures.find(modelDir.string());
-        if(search != usedTextures.end())
+        auto search = m_LoadedTextures.find(modelDir.string());
+        if(search != m_LoadedTextures.end())
         {
             textures.push_back(search->second);
             continue;
@@ -152,7 +158,7 @@ std::vector<std::shared_ptr<Texture2d>> Model::LoadMaterialTextures(const aiScen
             int index = str.C_Str()[1] - '0';
             const aiTexture* texture = scene->mTextures[index];
             auto texture2d = std::make_shared<Texture2d>(texture);
-            usedTextures.insert(std::make_pair(modelDir.string(), texture2d));
+            m_LoadedTextures.insert(std::make_pair(modelDir.string(), texture2d));
             textures.push_back(texture2d);
             continue;
         }
@@ -166,7 +172,7 @@ std::vector<std::shared_ptr<Texture2d>> Model::LoadMaterialTextures(const aiScen
         if (modelDir != "")
         {
             auto texture2d = std::make_shared<Texture2d>(modelDir.string());
-            usedTextures.insert(std::make_pair(modelDir.string(), texture2d));
+            m_LoadedTextures.insert(std::make_pair(modelDir.string(), texture2d));
             textures.push_back(texture2d);
         }
 
@@ -176,7 +182,7 @@ std::vector<std::shared_ptr<Texture2d>> Model::LoadMaterialTextures(const aiScen
 
 const std::filesystem::path Model::FindCorrectPath(std::filesystem::path fileName) const
 {
-    std::filesystem::path modelBasePath = std::filesystem::path(directory).parent_path();
+    std::filesystem::path modelBasePath = std::filesystem::path(m_Directory).parent_path();
     
     std::vector < std::string > folders = {
 		"textures",

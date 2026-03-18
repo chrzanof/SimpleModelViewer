@@ -1,6 +1,6 @@
 #pragma once
 #include <cmath>
-class Vector2f
+struct Vector2f
 {
 public:
     float x;

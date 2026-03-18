@@ -1,10 +1,10 @@
 #include "Input.h"
 
-float MouseInput::offsetX = 0.0f;
-float MouseInput::offsetY = 0.0f;
+float MouseInput::s_OffsetX = 0.0f;
+float MouseInput::s_OffsetY = 0.0f;
 
-bool MouseInput::leftButtonClicked = false;
-bool MouseInput::rightButtonClicked = false;
+bool MouseInput::s_LeftButtonClicked = false;
+bool MouseInput::s_RightButtonClicked = false;
 
-Vector2f MouseInput::position = { 0.0f, 0.0f };
-Vector2f MouseInput::lastPosition = { 0.0f, 0.0f };
+Vector2f MouseInput::s_Position = { 0.0f, 0.0f };
+Vector2f MouseInput::s_LastPosition = { 0.0f, 0.0f };
