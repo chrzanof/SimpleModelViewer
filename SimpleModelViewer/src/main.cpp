@@ -1,8 +1,5 @@
 #include "Application.h"
 
-//TODO: use size callback somewhere. Probably should move this definition to Application.h
-static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-
 int main()
 {
 	WindowSpecs windowSpecs {
@@ -21,10 +18,5 @@ int main()
 	application.Run();
 
 	return 0;
-}
-
-static void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-	glViewport(0, 0, width, height);
 }
 

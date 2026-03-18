@@ -22,6 +22,7 @@ m_Window(appSpecs.windowSpecs), m_LightPos(10.0f, 1.0f, -1.0f), m_LightColor(1.0
 	m_Window.SetViewport(0, 0, m_Window.GetWidth(), m_Window.GetHeight());
 	m_Window.SetScrollCallback(ScrollCallback);
 	m_Window.SetDropCallback(DropCallback);
+	m_Window.SetFrameBufferSizeCallback(FramebufferSizeCallback);
 
 	m_Program = std::make_unique<ShaderProgram>(appSpecs.vertexShaderPath, appSpecs.fragmentShaderPath);
 	m_TexturePath = "models/wooden_crate.jpg";
@@ -251,4 +252,10 @@ void Application::DropCallback(GLFWwindow* window, int count, const char** paths
 
 }
 
-
+void Application::FramebufferSizeCallback(GLFWwindow* window, int width, int height)
+{
+	if(Window* windowPtr = static_cast<Window*>(glfwGetWindowUserPointer(window)))
+	{
+		windowPtr->OnResize(width, height);
+	}
+}

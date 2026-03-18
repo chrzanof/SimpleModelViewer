@@ -28,6 +28,7 @@ Window::Window(WindowSpecs windowSpecs)
 		return;
 	}
 	glfwMakeContextCurrent(m_Window);
+	glfwSetWindowUserPointer(m_Window, this);
 }
 
 Window::~Window()
@@ -123,6 +124,13 @@ int Window::GetWidth() const
 int Window::GetHeight() const
 {
 	return m_Height;
+}
+
+void Window::OnResize(int width, int height)
+{
+	m_Width = width;
+	m_Height = height;
+	SetViewport(0, 0, m_Width, m_Height);
 }
 
 const std::string& Window::GetTile() const

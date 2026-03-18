@@ -30,6 +30,7 @@ public:
 private:
     static void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 	static void DropCallback(GLFWwindow* window, int count, const char** paths);
+    static void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
 
     void InitImGui(GLFWwindow* window);
     void ShutdownImGui();

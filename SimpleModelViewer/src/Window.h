@@ -27,6 +27,7 @@ public:
 	void SetViewport(int x, int y, int width, int height);
 	int GetWidth() const;
 	int GetHeight() const;
+	void OnResize(int width, int height);
 	const std::string& GetTile() const;
 	void SwapBuffers() const;
 	void SetFrameBufferSizeCallback(GLFWframebuffersizefun callback) const;
