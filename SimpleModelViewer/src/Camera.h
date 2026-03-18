@@ -32,15 +32,14 @@ private:
 	float m_NearPlane = 0.0f;
 	float m_FarPlane = 0.0f;
 
+	float m_Radius = 4.0f;
 	float m_Azimuth = 0.0f;
 	float m_Elevation = 0.0f;
 	float m_LastAzimuth = 0.0f;
 	float m_LastElevation = 0.0f;
 
-	float m_CameraSpeed = 0.2f;
-
-	static float s_Radius;
-	static float s_ZoomSpeed;
+	float m_MovementSpeed = 0.2f;
+	float m_ZoomSpeed = 0.5f;
 
 	Vector2f m_LastCursorPosition{ 0.0f, 0.0f };
 	Vector2f m_CurrentCursorPosition{ 0.0f, 0.0f };

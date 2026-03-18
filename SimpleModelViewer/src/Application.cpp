@@ -100,8 +100,6 @@ void Application::DrawImGui()
 	}
 	ImGui::TextWrapped("or drop model & texture files anywhere in the window");
 	ImGui::TextWrapped("");
-	ImGui::TextWrapped("Rotate: LMB + Drag");
-	ImGui::TextWrapped("Zoom: Mouse Wheel");
 	if (ImGuiFileDialog::Instance()->Display("ChooseModel"))
 	{
 		if (ImGuiFileDialog::Instance()->IsOk())
@@ -135,7 +133,8 @@ void Application::DrawImGui()
 
 	ImGui::SliderFloat3("Light Position", &m_LightPos.x, -m_LightPosLimit, m_LightPosLimit);
 	ImGui::SliderFloat3("Light Color", &m_LightColor.x, 0.0f, 1.f);
-	
+	ImGui::TextWrapped("Rotate: LMB + Drag");
+	ImGui::TextWrapped("Zoom: Mouse Wheel");
 
 	ImGui::End();
 }

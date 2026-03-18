@@ -6,9 +6,6 @@
 
 #include "Input.h"
 
-float Camera::s_Radius = 4.0f;
-float Camera::s_ZoomSpeed = 0.5f;
-
 void Camera::SetPosition(float x, float y, float z)
 {
 	this->m_Position = Vector3f{ x, y, z };
@@ -19,7 +16,7 @@ void Camera::UpdateOrbitalPositionAndRotation()
 	auto cameraPitch = Matrix4x4_f::RotationX(TO_RADIANS(m_Azimuth));
 	auto cameraYaw = Matrix4x4_f::RotationY(TO_RADIANS(m_Elevation));
 
-	Vector4f cameraVector{ 0.0f, 0.0f, -s_Radius, 1.0f };
+	Vector4f cameraVector{ 0.0f, 0.0f, -m_Radius, 1.0f };
 	cameraVector = cameraYaw * cameraPitch * cameraVector;
 
 	cameraVector = cameraVector + Vector4f{ m_PivotPosition, 0.0f };
@@ -40,8 +37,8 @@ void Camera::ProcessInput()
 
 	if(MouseInput::s_LeftButtonClicked)
 	{
-		m_Azimuth = m_LastAzimuth + deltaCursorPosition.y * m_CameraSpeed;
-		m_Elevation = m_LastElevation + deltaCursorPosition.x * m_CameraSpeed;
+		m_Azimuth = m_LastAzimuth + deltaCursorPosition.y * m_MovementSpeed;
+		m_Elevation = m_LastElevation + deltaCursorPosition.x * m_MovementSpeed;
 
 		if (m_Azimuth > 89.5f)
 			m_Azimuth = 89.5f;
@@ -50,13 +47,13 @@ void Camera::ProcessInput()
 	}
 	else if(MouseInput::s_RightButtonClicked)
 	{
-		m_PivotPosition = m_PivotPosition + m_Right * -deltaCursorPosition.x * s_ZoomSpeed *  0.01f;
-		m_PivotPosition = m_PivotPosition + m_Up * deltaCursorPosition.y * s_ZoomSpeed * 0.01f;
+		m_PivotPosition = m_PivotPosition + m_Right * -deltaCursorPosition.x * m_ZoomSpeed *  0.01f;
+		m_PivotPosition = m_PivotPosition + m_Up * deltaCursorPosition.y * m_ZoomSpeed * 0.01f;
 	}
 
-	s_Radius -= MouseInput::s_OffsetY * s_ZoomSpeed;
-	if (s_Radius < m_NearPlane)
-		s_Radius = m_NearPlane;
+	m_Radius -= MouseInput::s_OffsetY * m_ZoomSpeed;
+	if (m_Radius < m_NearPlane)
+		m_Radius = m_NearPlane;
 }
 
 void Camera::LookAt(float x, float y, float z)
@@ -87,8 +84,8 @@ void Camera::FocusOn(const Model& model, const WorldTrans& worldTrans)
 	// calculate camera distance and speed
 	float cameraDistanceModifier = 2.0f;
 	float l = model.GetLargestDiagonal().Length();
-	s_Radius = (l * 0.5f) * tan(m_Fov * 0.5f) * cameraDistanceModifier;
-	s_ZoomSpeed = s_Radius * 0.125;
+	m_Radius = (l * 0.5f) * tan(m_Fov * 0.5f) * cameraDistanceModifier;
+	m_ZoomSpeed = m_Radius * 0.125;
 	m_PivotPosition = worldTrans.GetPosition();
 }
 
