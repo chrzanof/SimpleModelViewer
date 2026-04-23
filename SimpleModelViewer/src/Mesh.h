@@ -26,7 +26,7 @@ public:
 		other.m_EBO = 0;
 	}
 
-	void SetupMesh();
+	
 	const std::vector<Vertex>& GetVerticesData() const;
 	const std::vector<unsigned int>& GetIndicesData() const;
 	void Bind() const;
@@ -34,6 +34,7 @@ public:
 	void Draw(ShaderProgram& shaderProgram) const;
 
 private:
+	void SetupMesh();
 	std::vector<Vertex> m_Vertices;
 	std::vector<unsigned int> m_Indices;
 	std::vector<std::shared_ptr<Texture2d>> m_Textures;

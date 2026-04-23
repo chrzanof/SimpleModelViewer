@@ -30,10 +30,33 @@ m_Window(appSpecs.windowSpecs), m_LightPos(10.0f, 1.0f, -1.0f), m_LightColor(1.0
 	m_Model = std::make_unique<Model>(m_ModelPath.string());
 	m_Model->AddTexture(m_TexturePath.string());
 
+	std::vector < std::string > skyboxFaces = {
+		"models/skybox/right.jpg",
+		"models/skybox/left.jpg",
+		"models/skybox/top.jpg",
+		"models/skybox/bottom.jpg",
+		"models/skybox/front.jpg",
+		"models/skybox/back.jpg"
+	};
+	m_TextureCubeMap = std::make_unique<TextureCubeMap>(skyboxFaces);
+	m_EnvironmentProgram = std::make_unique<ShaderProgram>("shaders/envVert.glsl", "shaders/envFrag.glsl");
+
+	glGenVertexArrays(1, &m_EnvironmentVAO);
+	glBindVertexArray(m_EnvironmentVAO);
+
+	glGenBuffers(1, &m_EnvironmentVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, m_EnvironmentVBO);
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * m_EnvironmentVertices.size(), &m_EnvironmentVertices.front(), GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, (void*)0);
+
 	InitImGui(m_Window.GetGLFWwindow());
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
+	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 	glFrontFace(GL_CW);
 	glCullFace(GL_BACK);
 
@@ -195,7 +218,8 @@ void Application::Render()
 	auto projection = m_Camera.GetProjectionMatrix(float(m_Window.GetWidth()) / float(m_Window.GetHeight()));
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glEnable(GL_DEPTH);
+	glEnable(GL_DEPTH_TEST);
+
 	m_Program->Bind();
 	glUniformMatrix4fv(modelLocation, 1, GL_TRUE, model.values);
 	glUniformMatrix4fv(viewLocation, 1, GL_TRUE, view.values);
@@ -207,7 +231,24 @@ void Application::Render()
 	{
 		m_Model->Draw(*m_Program);
 	}
+	glDepthFunc(GL_LEQUAL);
+	glDepthMask(GL_FALSE);
+	
+	m_EnvironmentProgram->Bind();
+	glActiveTexture(GL_TEXTURE0);
+	m_TextureCubeMap->Bind();
 
+	
+	viewLocation = glGetUniformLocation(m_EnvironmentProgram->GetId(), "view");
+	projectionLocation = glGetUniformLocation(m_EnvironmentProgram->GetId(), "projection");
+	glUniformMatrix4fv(viewLocation, 1, GL_TRUE, view.values);
+	glUniformMatrix4fv(projectionLocation, 1, GL_TRUE, projection.values);
+
+	glBindVertexArray(m_EnvironmentVAO);
+	glDrawArrays(GL_TRIANGLES, 0, 3);
+	
+	glDepthMask(GL_TRUE);
+	glDepthFunc(GL_LESS);
 
 	DrawImGui();
 	ImGui::Render();

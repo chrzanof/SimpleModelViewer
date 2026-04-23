@@ -374,3 +374,4 @@ FodyWeavers.xsd
 *.VC.db
 *.VC.VC.opendb
 x64/
+/.idea
