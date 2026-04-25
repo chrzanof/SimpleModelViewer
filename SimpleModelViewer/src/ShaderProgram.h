@@ -1,5 +1,7 @@
 #pragma once
 #include "Shader.h"
+#include "math/Matrix4x4_f.h"
+#include"math/Vector3f.h"
 
 class ShaderProgram
 {
@@ -11,6 +13,8 @@ public:
 	GLuint GetId() const;
 	void Bind() const;
 	void Unbind() const;
+	void SetMat4f(const std::string& name, const Matrix4x4_f& mat) const;
+	void SetVec3f(const std::string& name, const Vector3f& vec) const;
 
 private:
 	GLuint m_Id;

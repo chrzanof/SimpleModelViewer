@@ -35,3 +35,15 @@ void ShaderProgram::Unbind() const
 {
 	glUseProgram(0);
 }
+
+void ShaderProgram::SetMat4f(const std::string& name, const Matrix4x4_f& mat) const
+{
+	GLuint location = glGetUniformLocation(m_Id, name.c_str());
+	glUniformMatrix4fv(location, 1, GL_TRUE, mat.values);
+}
+
+void ShaderProgram::SetVec3f(const std::string& name, const Vector3f& vec) const
+{
+	GLuint location = glGetUniformLocation(m_Id, name.c_str());
+	glUniform3fv(location, 1, &vec.x);
+}

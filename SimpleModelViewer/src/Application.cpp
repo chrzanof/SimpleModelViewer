@@ -207,11 +207,6 @@ void Application::Update()
 void Application::Render()
 {
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-	GLuint modelLocation = glGetUniformLocation(m_Program->GetId(), "model");
-	GLuint viewLocation = glGetUniformLocation(m_Program->GetId(), "view");
-	GLuint projectionLocation = glGetUniformLocation(m_Program->GetId(), "projection");
-	GLuint lightPosLocation = glGetUniformLocation(m_Program->GetId(), "lightPos");
-	GLuint lightColorLocation = glGetUniformLocation(m_Program->GetId(), "lightColor");
 
 	auto model = m_WorldTrans.GetMatrix();
 	auto view = m_Camera.GetViewMatrix();
@@ -221,11 +216,13 @@ void Application::Render()
 	glEnable(GL_DEPTH_TEST);
 
 	m_Program->Bind();
-	glUniformMatrix4fv(modelLocation, 1, GL_TRUE, model.values);
-	glUniformMatrix4fv(viewLocation, 1, GL_TRUE, view.values);
-	glUniformMatrix4fv(projectionLocation, 1, GL_TRUE, projection.values);
-	glUniform3fv(lightPosLocation, 1, &m_LightPos.x);
-	glUniform3fv(lightColorLocation, 1, &m_LightColor.x);
+
+	m_Program->SetMat4f("model", model);
+	m_Program->SetMat4f("view", view);
+	m_Program->SetMat4f("projection", projection);
+
+	m_Program->SetVec3f("lightPos", m_LightPos);
+	m_Program->SetVec3f("lightColor", m_LightColor);
 
 	if (m_Model)
 	{
@@ -238,11 +235,9 @@ void Application::Render()
 	glActiveTexture(GL_TEXTURE0);
 	m_TextureCubeMap->Bind();
 
-	
-	viewLocation = glGetUniformLocation(m_EnvironmentProgram->GetId(), "view");
-	projectionLocation = glGetUniformLocation(m_EnvironmentProgram->GetId(), "projection");
-	glUniformMatrix4fv(viewLocation, 1, GL_TRUE, view.values);
-	glUniformMatrix4fv(projectionLocation, 1, GL_TRUE, projection.values);
+
+	m_EnvironmentProgram->SetMat4f("view", view);
+	m_EnvironmentProgram->SetMat4f("projection", projection);
 
 	glBindVertexArray(m_EnvironmentVAO);
 	glDrawArrays(GL_TRIANGLES, 0, 3);
