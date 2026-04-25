@@ -10,6 +10,7 @@
 #include <filesystem>
 #include "Quad.h"
 #include "TextureCubeMap.h"
+#include "Skybox.h"
 
 #define TO_RADIANS(x) ((x) * M_PI / 180.0f)
 
@@ -19,6 +20,9 @@ struct ApplicationSpecs
     WindowSpecs windowSpecs;
     std::string vertexShaderPath;
     std::string fragmentShaderPath;
+    std::string defaultModelPath;
+    std::string defaultTexturePath;
+    std::vector<std::string> skyboxFaces;
 };
 
 class Application
@@ -44,18 +48,10 @@ private:
 private:
     Window m_Window;
     Camera m_Camera;
-    std::unique_ptr<ShaderProgram> m_Program;
-    std::unique_ptr<ShaderProgram> m_EnvironmentProgram;
+    std::unique_ptr<ShaderProgram> m_ModelShader;
+    std::unique_ptr<ShaderProgram> m_SkyboxShader;
     std::unique_ptr<Model> m_Model;
-    std::unique_ptr<TextureCubeMap> m_TextureCubeMap;
-    
-    std::vector<float> m_EnvironmentVertices{
-        -1.0f,  3.0f, 1.0f,
-         3.0f, -1.0f, 1.0f,
-        -1.0f, -1.0f, 1.0f
-    };
-    GLuint m_EnvironmentVBO;
-    GLuint m_EnvironmentVAO;
+    std::unique_ptr<Skybox> m_Skybox;
     WorldTrans m_WorldTrans;
     Vector3f m_LightPos;
     Vector3f m_LightColor;

@@ -24,33 +24,15 @@ m_Window(appSpecs.windowSpecs), m_LightPos(10.0f, 1.0f, -1.0f), m_LightColor(1.0
 	m_Window.SetDropCallback(DropCallback);
 	m_Window.SetFrameBufferSizeCallback(FramebufferSizeCallback);
 
-	m_Program = std::make_unique<ShaderProgram>(appSpecs.vertexShaderPath, appSpecs.fragmentShaderPath);
-	m_TexturePath = "models/wooden_crate.jpg";
-	m_ModelPath = "models/cube.obj";
+	m_ModelShader = std::make_unique<ShaderProgram>(appSpecs.vertexShaderPath, appSpecs.fragmentShaderPath);
+	m_ModelPath = appSpecs.defaultModelPath;
+	m_TexturePath = appSpecs.defaultTexturePath;
 	m_Model = std::make_unique<Model>(m_ModelPath.string());
 	m_Model->AddTexture(m_TexturePath.string());
 
-	std::vector < std::string > skyboxFaces = {
-		"models/skybox/right.jpg",
-		"models/skybox/left.jpg",
-		"models/skybox/top.jpg",
-		"models/skybox/bottom.jpg",
-		"models/skybox/front.jpg",
-		"models/skybox/back.jpg"
-	};
-	m_TextureCubeMap = std::make_unique<TextureCubeMap>(skyboxFaces);
-	m_EnvironmentProgram = std::make_unique<ShaderProgram>("shaders/envVert.glsl", "shaders/envFrag.glsl");
+	m_SkyboxShader = std::make_unique<ShaderProgram>("shaders/envVert.glsl", "shaders/envFrag.glsl");
 
-	glGenVertexArrays(1, &m_EnvironmentVAO);
-	glBindVertexArray(m_EnvironmentVAO);
-
-	glGenBuffers(1, &m_EnvironmentVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, m_EnvironmentVBO);
-
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * m_EnvironmentVertices.size(), &m_EnvironmentVertices.front(), GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, (void*)0);
+	m_Skybox = std::make_unique<Skybox>(appSpecs.skyboxFaces);
 
 	InitImGui(m_Window.GetGLFWwindow());
 
@@ -215,32 +197,30 @@ void Application::Render()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
 
-	m_Program->Bind();
+	m_ModelShader->Bind();
 
-	m_Program->SetMat4f("model", model);
-	m_Program->SetMat4f("view", view);
-	m_Program->SetMat4f("projection", projection);
+	m_ModelShader->SetMat4f("model", model);
+	m_ModelShader->SetMat4f("view", view);
+	m_ModelShader->SetMat4f("projection", projection);
 
-	m_Program->SetVec3f("lightPos", m_LightPos);
-	m_Program->SetVec3f("lightColor", m_LightColor);
+	m_ModelShader->SetVec3f("lightPos", m_LightPos);
+	m_ModelShader->SetVec3f("lightColor", m_LightColor);
 
 	if (m_Model)
 	{
-		m_Model->Draw(*m_Program);
+		m_Model->Draw(*m_ModelShader);
 	}
 	glDepthFunc(GL_LEQUAL);
 	glDepthMask(GL_FALSE);
 	
-	m_EnvironmentProgram->Bind();
-	glActiveTexture(GL_TEXTURE0);
-	m_TextureCubeMap->Bind();
+	m_SkyboxShader->Bind();
 
 
-	m_EnvironmentProgram->SetMat4f("view", view);
-	m_EnvironmentProgram->SetMat4f("projection", projection);
 
-	glBindVertexArray(m_EnvironmentVAO);
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	m_SkyboxShader->SetMat4f("view", view);
+	m_SkyboxShader->SetMat4f("projection", projection);
+
+	m_Skybox->Draw(*m_SkyboxShader);
 	
 	glDepthMask(GL_TRUE);
 	glDepthFunc(GL_LESS);
