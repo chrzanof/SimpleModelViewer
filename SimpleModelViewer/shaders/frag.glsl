@@ -30,7 +30,7 @@ void main()
 
 	vec4 basicColor;
 	
-	if(textureSize(diffuseTexture, 0) == 1)
+	if(textureSize(diffuseTexture, 0) == vec2(1))
 	{
 		basicColor = vec4(0.5f, 0.5f, 0.5f, 1.0f);
 	}
